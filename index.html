@@ -1,476 +1,339 @@
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Evaluación de Liderazgo Adaptativo</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-        <style>
-            body {
-                font-family: 'Inter', sans-serif;
-            }
-            .chat-bubble {
-                max-width: 75%;
-            }
-            .chat-bubble.user {
-                background-color: #2563eb; /* bg-blue-600 */
-                color: white;
-            }
-            .chat-bubble.ai {
-                background-color: #4b5563; /* bg-gray-600 */
-                color: white;
-            }
-            .loader {
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid #3498db;
-                border-radius: 50%;
-                width: 40px;
-                height: 40px;
-                animation: spin 1s linear infinite;
-            }
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        </style>
-    </head>
-    <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
-    
-        <div id="loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex flex-col items-center justify-center z-50 hidden">
-            <div class="loader mb-4"></div>
-            <p id="loading-text" class="text-lg">Cargando...</p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación de Liderazgo Personalizada</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- BRANDING PERSONALIZADO --- */
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff; /* Fondo Blanco */
+        }
+        .brand-text { color: #f2c50f; }
+        .brand-button { 
+            background-color: #e00000; /* Rojo para botones */
+            color: white;
+        }
+        .brand-button:hover { background-color: #c00000; }
+        .brand-accent-bg { background-color: #f2c50f; }
+
+        .chat-bubble { max-width: 75%; }
+        .chat-bubble.user { background-color: #fef9c3; /* Amarillo claro */ color: #713f12; }
+        .chat-bubble.ai { background-color: #e5e7eb; /* Gris claro */ color: #1f2937; }
+
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #f2c50f; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-white text-gray-800 flex items-center justify-center min-h-screen p-4">
+
+    <div id="loading-overlay" class="fixed inset-0 bg-white bg-opacity-80 flex flex-col items-center justify-center z-50 hidden">
+        <div class="loader mb-4"></div>
+        <p id="loading-text" class="text-lg text-gray-700">Cargando...</p>
+    </div>
+
+    <div class="w-full max-w-4xl mx-auto bg-gray-50 rounded-2xl shadow-2xl p-6 md:p-8">
+        
+        <!-- PÁGINA DE BIENVENIDA Y DATOS DEL USUARIO -->
+        <div id="page-welcome">
+            <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-2">Evaluación de Liderazgo Generativa</h1>
+            <p class="text-gray-600 text-center mb-6">Primero, cuéntanos un poco sobre ti para personalizar la experiencia.</p>
+            
+            <div class="space-y-4 mb-8">
+                <div>
+                    <label for="user-name" class="block text-sm font-medium text-gray-700">Tu Nombre</label>
+                    <input type="text" id="user-name" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#f2c50f] focus:border-[#f2c50f]" placeholder="Ej: Ana Torres">
+                </div>
+                <div>
+                    <label for="user-sector" class="block text-sm font-medium text-gray-700">Tu Sector Profesional</label>
+                    <input type="text" id="user-sector" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#f2c50f] focus:border-[#f2c50f]" placeholder="Ej: Tecnología, Banca, Salud">
+                </div>
+            </div>
+
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-8">
+                <div id="progress-bar-main" class="brand-accent-bg h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+            <button onclick="startAndSaveUserInfo()" class="w-full brand-button font-bold py-3 px-4 rounded-lg transition duration-300">Comenzar Evaluación</button>
         </div>
-    
-        <div class="w-full max-w-4xl mx-auto bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8">
-    
-            <!-- 1. PÁGINA DE BIENVENIDA -->
-            <div id="page-welcome">
-                <h1 class="text-3xl md:text-4xl font-bold text-center text-blue-400 mb-4">Bienvenido a la Evaluación de Liderazgo Adaptativo</h1>
-                <p class="text-gray-300 text-center mb-6">Esta evaluación consta de un test adaptativo y 5 simulaciones de conversación con IA para medir tus capacidades de liderazgo en un entorno realista.</p>
-                <div class="w-full bg-gray-700 rounded-full h-2.5 mb-8">
-                    <div id="progress-bar-main" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
-                </div>
-                <button onclick="startAssessment()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Comenzar Evaluación</button>
-            </div>
-    
-            <!-- 2. PÁGINA DE DIAGNÓSTICO (MCQ) -->
-            <div id="page-test" class="hidden">
-                <h2 id="test-dimension-title" class="text-2xl font-bold text-blue-400 mb-2"></h2>
-                <p class="text-gray-400 mb-6">Bloque de Test Adaptativo</p>
-                <p id="question-text" class="text-lg mb-6"></p>
-                <div id="options-container" class="space-y-3">
-                    <!-- Las opciones se generarán aquí -->
-                </div>
-                <button onclick="submitAnswer()" id="submit-answer-btn" class="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:bg-gray-500" disabled>Siguiente</button>
-            </div>
-    
-            <!-- 3. PÁGINA DE SIMULACIÓN (CHAT) -->
-            <div id="page-simulation" class="hidden">
-                <h2 id="sim-dimension-title" class="text-2xl font-bold text-blue-400 mb-2"></h2>
-                <p class="text-gray-400 mb-4">Simulación de Conversación con IA</p>
-                <div id="chat-window" class="h-80 bg-gray-900 rounded-lg p-4 overflow-y-auto flex flex-col space-y-4 mb-4">
-                    <!-- Mensajes del chat aquí -->
-                </div>
-                <div class="flex space-x-2">
-                    <input type="text" id="chat-input" class="flex-grow bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Escribe tu respuesta aquí...">
-                    <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Enviar</button>
-                </div>
-                 <button onclick="endSimulation()" id="end-sim-btn" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Finalizar Simulación e Ir a la Siguiente</button>
-            </div>
-    
-            <!-- 4. PÁGINA DE RESULTADOS -->
-            <div id="page-results" class="hidden">
-                <h1 class="text-3xl md:text-4xl font-bold text-center text-blue-400 mb-4">Resultados y Plan de Acción</h1>
-                <p class="text-gray-300 text-center mb-8">Este es tu perfil de liderazgo basado en el test y las simulaciones.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                    <div>
-                        <canvas id="radar-chart"></canvas>
-                    </div>
-                    <div id="results-summary" class="space-y-4">
-                        <h3 class="text-xl font-bold text-blue-300">Análisis General</h3>
-                        <div id="strengths-weaknesses">
-                            <!-- Se llenará dinámicamente -->
-                        </div>
-                         <h3 class="text-xl font-bold text-blue-300 mt-4">Plan de Acción Sugerido</h3>
-                        <div id="action-plan">
-                            <!-- Se llenará dinámicamente -->
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-8 text-center">
-                    <button onclick="generatePDF()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Generar Informe PDF</button>
-                </div>
-            </div>
-    
+
+        <!-- PÁGINA DE TEST -->
+        <div id="page-test" class="hidden">
+            <h2 id="test-dimension-title" class="text-2xl font-bold text-gray-800 mb-2"></h2>
+            <p class="text-gray-500 mb-6">Test Generativo</p>
+            <p id="question-text" class="text-lg mb-6"></p>
+            <div id="options-container" class="space-y-3"></div>
+            <button onclick="submitAnswer()" id="submit-answer-btn" class="mt-8 w-full brand-button font-bold py-3 px-4 rounded-lg transition duration-300 disabled:bg-red-300" disabled>Siguiente</button>
         </div>
-    
-        <script>
-            // --- CONFIGURACIÓN Y DATOS ---
-            const dimensions = [
-                "Manage Paradoxes",
-                "Challenge Paradigms",
-                "Potentializing People",
-                "Widen Skill Sets",
-                "Build Leadership Capacities"
-            ];
-    
-            const questions = [
-                // Manage Paradoxes
-                { d: 0, l: 1, q: "Un miembro del equipo quiere experimentar con nueva tecnología, pero esto podría ralentizar el proyecto actual. ¿Qué haces?", o: [{t: "Priorizo la entrega a tiempo y descarto la experimentación.", w: 0.2}, {t: "Permito la experimentación sin un plan claro.", w: 0.2}, {t: "Busco una forma de experimentar a pequeña escala sin impactar la fecha de entrega.", w: 1.0}, {t: "Le digo que lo veremos después de entregar el proyecto.", w: 0.6}] },
-                { d: 0, l: 2, q: "El equipo de QA pide más tiempo para pruebas, pero el cliente exige la demo el viernes. ¿Qué propones?", o: [{t: "Presiono a QA para que termine antes.", w: 0.2}, {t: "Retraso la demo para asegurar la calidad.", w: 0.6}, {t: "Negocio con el cliente mostrar las funciones ya probadas y planifico una segunda demo.", w: 1.0}, {t: "Hago la demo y espero que no haya errores.", w: 0.1}] },
-                { d: 0, l: 3, q: "Debes reducir costes un 10%, pero también se te pide innovar, lo cual requiere inversión. ¿Cómo abordas esta paradoja?", o: [{t: "Me centro en reducir costes, la innovación puede esperar.", w: 0.2}, {t: "Invierto en innovación esperando que genere ahorros a largo plazo.", w: 0.6}, {t: "Propongo un plan de innovación frugal, automatizando procesos para reducir costes operativos y liberar fondos.", w: 1.0}, {t: "Pido a mi superior que elija una de las dos prioridades.", w: 0.4}] },
-                // Challenge Paradigms
-                { d: 1, l: 1, q: "Un proceso interno es ineficiente, pero 'siempre se ha hecho así'. ¿Cuál es tu primer paso?", o: [{t: "Lo cambio inmediatamente por una idea mejor.", w: 0.4}, {t: "Recopilo datos sobre el impacto de la ineficiencia para presentar un caso de cambio.", w: 1.0}, {t: "Me quejo del proceso con mis compañeros.", w: 0.1}, {t: "Acepto el proceso y no hago nada.", w: 0.0}] },
-                { d: 1, l: 2, q: "Propones una nueva estrategia y un gerente senior dice 'Eso nunca funcionará aquí'. ¿Cómo respondes?", o: [{t: "Abandono la idea para no crear conflicto.", w: 0.2}, {t: "Le pregunto '¿Qué necesitarías ver para creer que podría funcionar?' y propongo un piloto.", w: 1.0}, {t: "Defiendo mi idea enérgicamente, insistiendo que tengo razón.", w: 0.4}, {t: "Ignoro su comentario y sigo adelante.", w: 0.3}] },
-                { d: 1, l: 3, q: "Tu equipo está muy cómodo con las herramientas actuales, pero una nueva tecnología podría duplicar la productividad. ¿Cómo gestionas la resistencia?", o: [{t: "Impongo la nueva herramienta por decreto.", w: 0.2}, {t: "Organizo una demo, formo a 'campeones' internos y muestro los beneficios con un caso de éxito pequeño.", w: 1.0}, {t: "Dejo que usen la herramienta que quieran.", w: 0.4}, {t: "Cancelo el proyecto para mantener al equipo contento.", w: 0.1}] },
-                // Potentializing People
-                { d: 2, l: 2, q: "Un analista de tu equipo, Marta, siente que está estancada. ¿Qué conversación tienes con ella?", o: [{t: "Le digo que revise las vacantes internas.", w: 0.2}, {t: "Le asigno tareas más difíciles para ver si responde.", w: 0.6}, {t: "Me reúno para entender sus intereses y co-crear un plan de desarrollo con hitos claros.", w: 1.0}, {t: "Le digo que el trabajo es así a veces.", w: 0.1}] },
-                { d: 3, l: 2, q: "El equipo técnico propone una migración de datos que mejorará la latencia, pero dejará al equipo de ventas sin CRM durante 48h. ¿Qué decides?", o: [{t: "Priorizo la tecnología; ventas tendrá que adaptarse.", w: 0.2}, {t: "Cancelo la migración para no afectar a ventas.", w: 0.3}, {t: "Busco una solución intermedia, como una migración por fases o en fin de semana, comunicando el impacto y plan de contingencia.", w: 1.0}, {t: "Pido a los equipos que se pongan de acuerdo entre ellos.", w: 0.6}] },
-                { d: 4, l: 2, q: "Te informan que un proveedor clave ha caído, afectando el lanzamiento de mañana. ¿Cuáles son tus primeros 15 minutos?", o: [{t: "Busco culpables para entender qué falló.", w: 0.1}, {t: "Comunico el retraso a todos los stakeholders y luego analizo el problema.", w: 0.6}, {t: "Reúno al equipo clave, defino un plan de comunicación inmediato (qué, quién, cuándo) y asigno tareas para buscar alternativas.", w: 1.0}, {t: "Intento solucionar el problema técnico yo mismo.", w: 0.2}] },
-            ];
-    
-            const simulations = [
-                { d: 0, s: "Eres Ana, Scrum Master. Te importa la rapidez (entrega semanal) pero Calidad exige más QA y retrasa. Responde con tensión real (no seas complaciente). Si el líder integra ambas (rapidez y calidad), baja la tensión. Si elige solo una, sube la tensión.", u: "Ana: El equipo de QA dice que si seguimos así tendremos bugs en producción. Pero el cliente exige demo el viernes. ¿Qué propones?", r: "Evalúa (0-5): escucha empática, re-enmarcar paradoja, decisión integradora." },
-                { d: 1, s: "Eres Luis, gerente que defiende 'como siempre lo hacemos'. Resiste propuestas nuevas. Si el líder cuestiona con respeto, pide datos, propone experimento controlado, te muestras más abierto.", u: "Luis: Esto siempre funcionó, mejor no inventar ahora.", r: "Evalúa (0-5): cuestionar hábito con respeto, proponer hipótesis, sugerir prueba pequeña." },
-                { d: 2, s: "Eres Marta, analista estancada. Te sientes invisible. Si el líder escucha, co-crea un plan de desarrollo, define hitos y apoyo, tu motivación sube.", u: "Marta: Siento que no avanzo. Hago lo mismo y no aprendo nada nuevo.", r: "Evalúa (0-5): preguntas abiertas, feedback de crecimiento, co-creación de plan." },
-                { d: 3, s: "Eres Carlos, data lead. Presentas un trade-off técnico-humano (migración de datos afecta al equipo comercial). Evalúa si el líder integra habilidades técnicas, humanas y de negocio.", u: "Carlos: La migración mejora la latencia, pero ventas quedará 48h sin CRM.", r: "Evalúa (0-5): comprensión técnica, empatía con negocio, comunicación de impacto." },
-                { d: 4, s: "Eres un Coach virtual. Planteas una mini-crisis. Evalúas la autorregulación, priorización, comunicación clara y aprendizaje del líder bajo presión.", u: "Coach: Tu PM te avisa que el proveedor clave cayó. El lanzamiento es mañana. ¿Cómo priorizas tus acciones en los próximos 15 minutos?", r: "Evalúa (0-5): autorregulación, priorización efectiva, comunicación clara." }
-            ];
-    
-            // --- ESTADO DE LA APLICACIÓN ---
-            let state = {
-                currentPage: 'welcome',
-                currentDimension: 0,
-                questionLevels: [2, 2, 2, 2, 2],
-                mcqScores: [0, 0, 0, 0, 0],
-                mcqAnswersCount: [0, 0, 0, 0, 0],
-                simulationScores: [0, 0, 0, 0, 0],
-                finalScores: [0, 0, 0, 0, 0],
-                chatHistory: [],
+
+        <!-- PÁGINA DE SIMULACIÓN -->
+        <div id="page-simulation" class="hidden">
+            <h2 id="sim-dimension-title" class="text-2xl font-bold text-gray-800 mb-2"></h2>
+            <p class="text-gray-500 mb-4">Simulación Generativa</p>
+            <div id="chat-window" class="h-80 bg-white border border-gray-200 rounded-lg p-4 overflow-y-auto flex flex-col space-y-4 mb-4"></div>
+            <div class="flex space-x-2">
+                <input type="text" id="chat-input" class="flex-grow bg-white border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2c50f]" placeholder="Escribe tu respuesta aquí...">
+                <button onclick="sendMessage()" class="brand-button font-bold py-3 px-4 rounded-lg transition duration-300">Enviar</button>
+            </div>
+             <button onclick="endSimulation()" id="end-sim-btn" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Finalizar Simulación y Evaluar</button>
+        </div>
+
+        <!-- PÁGINA DE RESULTADOS -->
+        <div id="page-results" class="hidden">
+             <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-4">Resultados y Plan de Acción</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div> <canvas id="radar-chart"></canvas> </div>
+                <div id="results-summary" class="space-y-4">
+                    <h3 class="text-xl font-bold text-gray-700">Análisis General</h3>
+                    <div id="strengths-weaknesses"></div>
+                     <h3 class="text-xl font-bold text-gray-700 mt-4">Plan de Acción Sugerido</h3>
+                    <div id="action-plan"></div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <button onclick="generatePDF()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Generar Informe PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN Y DATOS ---
+        const dimensions = [
+            "Manage Paradoxes", "Challenge Paradigms", "Potentializing People", "Widen Skill Sets", "Build Leadership Capacities"
+        ];
+        
+        // --- ESTADO DE LA APLICACIÓN ---
+        let state = {
+            currentPage: 'welcome',
+            userName: '',
+            userSector: '',
+            currentDimension: 0,
+            currentQuestion: null,
+            currentSimulation: null,
+            mcqScores: [0, 0, 0, 0, 0],
+            lastMCQAnswer: null, 
+            simulationScores: [0, 0, 0, 0, 0],
+            finalScores: [0, 0, 0, 0, 0],
+            chatHistory: [],
+        };
+
+        // --- LÓGICA DE LA API ---
+        async function callGenerativeAI(systemPrompt, userPrompt, useJson = false) {
+            showLoading(true, "IA está generando...");
+            let requestBody = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
             };
-    
-            // --- LÓGICA DE LA API ---
-            async function callGenerativeAI(systemPrompt, userPrompt, useJson = false) {
-                showLoading(true, "IA está pensando...");
-    
-                let requestBody;
-                if (Array.isArray(userPrompt)) {
-                    requestBody = {
-                        contents: userPrompt,
-                        systemInstruction: { parts: [{ text: systemPrompt }] }
-                    };
-                } else {
-                    requestBody = {
-                        contents: [{ parts: [{ text: userPrompt }] }],
-                        systemInstruction: { parts: [{ text: systemPrompt }] }
-                    };
-                }
-    
-                if (useJson) {
-                    requestBody.generationConfig = {
-                        responseMimeType: "application/json",
-                    }
-                }
-    
-                try {
-                    // Llamamos a nuestro intermediario seguro en Netlify
-                    const response = await fetch('/.netlify/functions/call-ai', {
-                        method: 'POST',
-                        body: JSON.stringify(requestBody)
-                    });
-    
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(`Error del intermediario: ${errorData.error || response.statusText}`);
-                    }
-    
-                    const result = await response.json();
-                    showLoading(false);
-                    return result.candidates[0].content.parts[0].text;
-    
-                } catch (error) {
-                    console.error("Error llamando a la función de Netlify:", error);
-                    showLoading(false);
-                    if(state.currentPage === 'simulation'){
-                        document.getElementById('chat-window').innerHTML += `
-                            <div class="chat-bubble ai self-start rounded-lg p-3" style="background-color: #991b1b;">
-                                <b>Error:</b> ${error.message}. Revisa la consola de funciones en Netlify para más detalles.
-                            </div>
-                        `;
-                    } else {
-                        alert(`Error: ${error.message}`);
-                    }
-                    return null;
-                }
+            if (useJson) {
+                requestBody.generationConfig = { responseMimeType: "application/json" };
             }
-            
-            // --- NAVEGACIÓN Y RENDERIZADO ---
-            function showPage(pageId) {
-                ['welcome', 'test', 'simulation', 'results'].forEach(id => {
-                    document.getElementById(`page-${id}`).classList.add('hidden');
+            try {
+                const response = await fetch('/.netlify/functions/call-ai', {
+                    method: 'POST', body: JSON.stringify(requestBody)
                 });
-                document.getElementById(`page-${pageId}`).classList.remove('hidden');
-                state.currentPage = pageId;
-                updateProgressBar();
-            }
-    
-            function showLoading(isLoading, text = 'Cargando...') {
-                const overlay = document.getElementById('loading-overlay');
-                const loadingText = document.getElementById('loading-text');
-                loadingText.textContent = text;
-                if (isLoading) {
-                    overlay.classList.remove('hidden');
-                } else {
-                    overlay.classList.add('hidden');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Error del intermediario: ${errorData.error || response.statusText}`);
                 }
-            }
-    
-            function updateProgressBar() {
-                const totalSteps = dimensions.length * 2; // Test + Simulación por dimensión
-                let completedSteps = state.currentDimension * 2;
-                if (state.currentPage === 'simulation') {
-                    completedSteps += 1;
-                }
-                if(state.currentPage === 'results'){
-                    completedSteps = totalSteps;
-                }
-                const progress = (completedSteps / totalSteps) * 100;
-                document.getElementById('progress-bar-main').style.width = `${progress}%`;
-            }
-            
-            // --- LÓGICA DEL TEST ADAPTATIVO ---
-            function startAssessment() {
-                state.currentDimension = 0;
-                renderQuestion();
-                showPage('test');
-            }
-    
-            function renderQuestion() {
-                const dim = state.currentDimension;
-                const level = state.questionLevels[dim];
-                const availableQuestions = questions.filter(q => q.d === dim && q.l === level);
-                const question = availableQuestions.length > 0 ? availableQuestions[0] : questions.find(q => q.d === dim);
-    
-                if (!question) {
-                    startSimulation();
-                    return;
-                }
-    
-                document.getElementById('test-dimension-title').textContent = dimensions[dim];
-                document.getElementById('question-text').textContent = question.q;
-    
-                const optionsContainer = document.getElementById('options-container');
-                optionsContainer.innerHTML = '';
-                question.o.forEach((option, index) => {
-                    optionsContainer.innerHTML += `
-                        <label class="flex items-center p-4 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600">
-                            <input type="radio" name="option" value="${option.w}" class="form-radio h-5 w-5 text-blue-600 bg-gray-900 border-gray-500 focus:ring-blue-500">
-                            <span class="ml-4 text-gray-200">${option.t}</span>
-                        </label>
-                    `;
-                });
-                
-                document.querySelectorAll('input[name="option"]').forEach(radio => {
-                    radio.addEventListener('change', () => {
-                        document.getElementById('submit-answer-btn').disabled = false;
-                    });
-                });
-            }
-            
-            function submitAnswer() {
-                const selectedOption = document.querySelector('input[name="option"]:checked');
-                if (!selectedOption) return;
-    
-                const weight = parseFloat(selectedOption.value);
-                const dim = state.currentDimension;
-    
-                state.mcqScores[dim] += weight;
-                state.mcqAnswersCount[dim] += 1;
-    
-                if (weight === 1.0) {
-                    state.questionLevels[dim] = Math.min(3, state.questionLevels[dim] + 1);
-                } else if (weight <= 0.2) {
-                    state.questionLevels[dim] = Math.max(1, state.questionLevels[dim] - 1);
-                }
-                
-                document.getElementById('submit-answer-btn').disabled = true;
-                startSimulation();
-            }
-    
-            // --- LÓGICA DE SIMULACIÓN ---
-            function startSimulation() {
-                const dim = state.currentDimension;
-                const simData = simulations.find(s => s.d === dim);
-    
-                document.getElementById('sim-dimension-title').textContent = dimensions[dim];
-                const chatWindow = document.getElementById('chat-window');
-                chatWindow.innerHTML = `
-                    <div class="chat-bubble ai self-start rounded-lg p-3">
-                        ${simData.u}
-                    </div>
-                `;
-                
-                state.chatHistory = [
-                    { role: "model", parts: [{ text: simData.u }] }
-                ];
-    
-                showPage('simulation');
-            }
-    
-            async function sendMessage() {
-                const input = document.getElementById('chat-input');
-                const message = input.value.trim();
-                if (!message) return;
-                
-                input.value = '';
-                
-                document.getElementById('chat-window').innerHTML += `
-                    <div class="chat-bubble user self-end rounded-lg p-3">
-                        ${message}
-                    </div>
-                `;
-                state.chatHistory.push({ role: "user", parts: [{ text: message }] });
-    
-                const dim = state.currentDimension;
-                const simData = simulations.find(s => s.d === dim);
-                const systemPrompt = simData.s;
-                
-                const apiHistory = state.chatHistory.map(entry => {
-                    return { role: entry.role === "user" ? "user" : "model", parts: entry.parts};
-                });
-                
-                const aiResponse = await callGenerativeAI(systemPrompt, apiHistory);
-    
-                if (aiResponse) {
-                    state.chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
-                    document.getElementById('chat-window').innerHTML += `
-                        <div class="chat-bubble ai self-start rounded-lg p-3">
-                            ${aiResponse}
-                        </div>
-                    `;
-                    document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
-                }
-            }
-    
-            async function endSimulation() {
-                showLoading(true, "Evaluando simulación...");
-                const dim = state.currentDimension;
-                const simData = simulations.find(s => s.d === dim);
-                
-                const transcript = state.chatHistory.map(m => `${m.role === 'user' ? 'Líder' : 'Avatar'}: ${m.parts[0].text}`).join('\n');
-                const scoringPrompt = `
-                    Evalúa la siguiente conversación de un líder (entre triple comillas) con esta rúbrica: ${simData.r}.
-                    Devuélveme SOLAMENTE un objeto JSON con la siguiente estructura: { "criterios": {"criterio1": puntaje, ...}, "comentarios": "feedback conciso", "score_total_0a100": puntaje_total, "evidencias": ["frase 1", "frase 2"] }.
-                    """
-                    ${transcript}
-                    """
-                `;
-                
-                try {
-                    const scoreResponse = await callGenerativeAI("Eres un evaluador de liderazgo experto. Analiza la conversación y califica objetivamente según la rúbrica.", scoringPrompt, true);
-                    if (scoreResponse) {
-                        const scoreJson = JSON.parse(scoreResponse);
-                        state.simulationScores[dim] = scoreJson.score_total_0a100 || 0;
-                    } else {
-                        state.simulationScores[dim] = 50;
-                    }
-                } catch(e) {
-                    console.error("Error al parsear el score de la simulación:", e);
-                    state.simulationScores[dim] = 50;
-                }
-    
+                const result = await response.json();
                 showLoading(false);
-    
-                if (state.currentDimension < dimensions.length - 1) {
-                    state.currentDimension++;
-                    renderQuestion();
-                    showPage('test');
-                } else {
-                    calculateFinalScores();
-                    showResults();
-                }
+                return result.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error("Error en la llamada a la IA:", error);
+                showLoading(false);
+                alert(`Error de la IA: ${error.message}`);
+                return null;
             }
+        }
+        
+        // --- LÓGICA DE GENERACIÓN DE CONTENIDO PERSONALIZADO ---
+        async function generateQuestionForDimension(dimIndex) {
+            showLoading(true, "Generando pregunta personalizada...");
+            const dimensionName = dimensions[dimIndex];
+            const systemPrompt = "Eres un experto en desarrollo de liderazgo. Creas preguntas de test de opción múltiple contextualizadas. Devuelve SÓLO un objeto JSON.";
+            const userPrompt = `Genera una pregunta de liderazgo sobre "${dimensionName}" para un líder llamado ${state.userName} que trabaja en el sector de ${state.userSector}. El escenario debe ser realista para ese sector. Proporciona 4 opciones de respuesta (propiedad "t") con su peso de 0.0 a 1.0 (propiedad "w"). Estructura: { "q": "...", "o": [{ "t": "...", "w": 0.2 }, ...] }`;
             
-            // --- LÓGICA DE RESULTADOS ---
-            function calculateFinalScores() {
-                for (let i = 0; i < dimensions.length; i++) {
-                    const mcqAvg = state.mcqAnswersCount[i] > 0 ? (state.mcqScores[i] / state.mcqAnswersCount[i]) * 100 : 0;
-                    const simScore = state.simulationScores[i];
-                    state.finalScores[i] = Math.round(mcqAvg * 0.4 + simScore * 0.6);
-                }
+            try {
+                const response = await callGenerativeAI(systemPrompt, userPrompt, true);
+                state.currentQuestion = JSON.parse(response);
+                renderQuestion();
+            } catch (e) {
+                console.error("Fallo al generar la pregunta:", e);
+                alert("Hubo un error al generar la pregunta. Por favor, intenta de nuevo.");
             }
-    
-            function showResults() {
-                showPage('results');
-                const ctx = document.getElementById('radar-chart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'radar',
-                    data: {
-                        labels: dimensions.map(d => d.replace(/ /g, '\n')),
-                        datasets: [{
-                            label: 'Puntaje de Liderazgo',
-                            data: state.finalScores,
-                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                            borderColor: 'rgba(59, 130, 246, 1)',
-                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-                            pointBorderColor: '#fff',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            r: {
-                                angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
-                                grid: { color: 'rgba(255, 255, 255, 0.2)' },
-                                pointLabels: { color: '#fff', font: { size: 12 } },
-                                ticks: {
-                                    color: '#fff',
-                                    backdropColor: 'rgba(0,0,0,0.5)',
-                                    stepSize: 20
-                                },
-                                suggestedMin: 0,
-                                suggestedMax: 100
-                            }
-                        },
-                        plugins: { legend: { labels: { color: '#fff' } } }
-                    }
-                });
-    
-                let scoredDimensions = dimensions.map((name, index) => ({ name, score: state.finalScores[index] }));
-                scoredDimensions.sort((a, b) => b.score - a.score);
-                
-                const strengthsWeaknesses = document.getElementById('strengths-weaknesses');
-                strengthsWeaknesses.innerHTML = `
-                    <p><strong class="text-green-400">Top Fortaleza:</strong> ${scoredDimensions[0].name} (${scoredDimensions[0].score})</p>
-                    <p><strong class="text-yellow-400">Área de Desarrollo:</strong> ${scoredDimensions[scoredDimensions.length - 1].name} (${scoredDimensions[scoredDimensions.length - 1].score})</p>
+            showLoading(false);
+        }
+
+        async function generateSimulationForDimension(dimIndex, userAnswer) {
+            showLoading(true, "Generando simulación personalizada...");
+            const dimensionName = dimensions[dimIndex];
+            const systemPrompt = "Eres un diseñador de escenarios de role-play para líderes, contextualizados a su industria. Devuelve SÓLO un objeto JSON.";
+            const userPrompt = `Un líder llamado ${state.userName} del sector ${state.userSector}, enfrentado a un dilema sobre "${dimensionName}", eligió: "${userAnswer.t}". Crea un escenario de simulación que sea una consecuencia de esa elección. Define un personaje (rol y nombre) relevante para ese sector y su primera frase para iniciar la conversación. Estructura: { "role": "...", "persona": "...", "first_line": "..." }`;
+
+            try {
+                const response = await callGenerativeAI(systemPrompt, userPrompt, true);
+                state.currentSimulation = JSON.parse(response);
+                startSimulation();
+            } catch (e) {
+                console.error("Fallo al generar la simulación:", e);
+                alert("Hubo un error al generar el escenario de simulación.");
+            }
+            showLoading(false);
+        }
+
+        // --- NAVEGACIÓN Y RENDERIZADO ---
+        function showPage(pageId) {
+            ['welcome', 'test', 'simulation', 'results'].forEach(id => document.getElementById(`page-${id}`).classList.add('hidden'));
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+            state.currentPage = pageId;
+            updateProgressBar();
+        }
+        function showLoading(isLoading, text = 'Cargando...') {
+            const overlay = document.getElementById('loading-overlay');
+            document.getElementById('loading-text').textContent = text;
+            overlay.classList.toggle('hidden', !isLoading);
+        }
+        function updateProgressBar() {
+            const totalSteps = dimensions.length * 2;
+            let completedSteps = state.currentDimension * 2 + (state.currentPage === 'simulation' ? 1 : 0);
+            if (state.currentPage === 'results') completedSteps = totalSteps;
+            document.getElementById('progress-bar-main').style.width = `${(completedSteps / totalSteps) * 100}%`;
+        }
+        
+        // --- LÓGICA DEL TEST ---
+        async function startAndSaveUserInfo() {
+            const userName = document.getElementById('user-name').value.trim();
+            const userSector = document.getElementById('user-sector').value.trim();
+            if (!userName || !userSector) {
+                alert("Por favor, completa tu nombre y sector para continuar.");
+                return;
+            }
+            state.userName = userName;
+            state.userSector = userSector;
+            await startAssessment();
+        }
+        
+        async function startAssessment() {
+            state.currentDimension = 0;
+            showPage('test');
+            await generateQuestionForDimension(state.currentDimension);
+        }
+
+        function renderQuestion() {
+            const question = state.currentQuestion;
+            if (!question) return;
+            document.getElementById('test-dimension-title').textContent = dimensions[state.currentDimension];
+            document.getElementById('question-text').textContent = question.q;
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            question.o.forEach((option) => {
+                const optionData = JSON.stringify(option);
+                optionsContainer.innerHTML += `
+                    <label class="flex items-center p-4 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-100">
+                        <input type="radio" name="option" value='${optionData}' class="form-radio h-5 w-5 text-[#e00000] focus:ring-[#f2c50f]">
+                        <span class="ml-4 text-gray-700">${option.t}</span>
+                    </label>
                 `;
-                
-                const actionPlan = document.getElementById('action-plan');
-                 actionPlan.innerHTML = `
-                    <p class="text-gray-400 text-sm"><strong>Plan 30 días:</strong> Enfócate en practicar activamente '${scoredDimensions[scoredDimensions.length - 1].name}'. Busca una oportunidad por semana para aplicar un nuevo enfoque.</p>
-                    <p class="text-gray-400 text-sm mt-2"><strong>Plan 60 días:</strong> Solicita feedback específico sobre tu área de desarrollo a un par de confianza.</p>
-                 `;
-            }
-    
-            function generatePDF() {
-                showLoading(true, "Generando tu informe PDF...");
-                setTimeout(() => {
-                    showLoading(false);
-                    alert("Tu informe PDF ha sido generado y enviado a tu correo (simulación).");
-                }, 2000);
-            }
-    
-            document.addEventListener('DOMContentLoaded', () => {
-                document.getElementById('chat-input').addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') {
-                        sendMessage();
-                    }
-                });
             });
-        </script>
-    </body>
-    </html>
-    
+            document.querySelectorAll('input[name="option"]').forEach(radio => {
+                radio.addEventListener('change', () => document.getElementById('submit-answer-btn').disabled = false);
+            });
+        }
+        
+        async function submitAnswer() {
+            const selectedOption = document.querySelector('input[name="option"]:checked');
+            if (!selectedOption) return;
+            const answerObject = JSON.parse(selectedOption.value);
+            state.lastMCQAnswer = answerObject;
+            const dim = state.currentDimension;
+            state.mcqScores[dim] = answerObject.w * 100;
+            document.getElementById('submit-answer-btn').disabled = true;
+            await generateSimulationForDimension(dim, state.lastMCQAnswer);
+        }
+
+        // --- LÓGICA DE SIMULACIÓN ---
+        function startSimulation() {
+            const sim = state.currentSimulation;
+            if (!sim) return;
+            document.getElementById('sim-dimension-title').textContent = dimensions[state.currentDimension];
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.innerHTML = `<div class="chat-bubble ai self-start rounded-lg p-3">${sim.first_line}</div>`;
+            state.chatHistory = [{ role: "model", parts: [{ text: sim.first_line }] }];
+            showPage('simulation');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+            input.value = '';
+            
+            document.getElementById('chat-window').innerHTML += `<div class="chat-bubble user self-end rounded-lg p-3">${message}</div>`;
+            state.chatHistory.push({ role: "user", parts: [{ text: message }] });
+
+            const sim = state.currentSimulation;
+            const systemPrompt = `Eres ${sim.role}. Tu personalidad y objetivos son: ${sim.persona}. Continúa la conversación con ${state.userName} de forma natural y realista.`;
+            const apiHistory = state.chatHistory.map(entry => ({ role: entry.role === 'user' ? 'user' : 'model', parts: entry.parts }));
+            const aiResponse = await callGenerativeAI(systemPrompt, apiHistory);
+
+            if (aiResponse) {
+                state.chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+                document.getElementById('chat-window').innerHTML += `<div class="chat-bubble ai self-start rounded-lg p-3">${aiResponse}</div>`;
+                document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
+            }
+        }
+
+        async function endSimulation() {
+            showLoading(true, "Evaluando simulación...");
+            const dim = state.currentDimension;
+            const transcript = state.chatHistory.map(m => `${m.role === 'user' ? `${state.userName}` : 'Avatar'}: ${m.parts[0].text}`).join('\n');
+            const scoringPrompt = `Evalúa la conversación de ${state.userName} (líder en ${state.userSector}) con ${state.currentSimulation.role}. CONTEXTO: Su elección previa fue "${state.lastMCQAnswer.t}". Rúbrica para "${dimensions[dim]}": evalúa escucha, empatía, claridad, y decisión. Devuelve SÓLO un JSON: { "comentarios": "feedback conciso", "score_total_0a100": puntaje_total }`;
+            
+            try {
+                const scoreResponse = await callGenerativeAI("Eres un coach de liderazgo experto. Analiza y califica objetivamente.", scoringPrompt, true);
+                state.simulationScores[dim] = scoreResponse ? JSON.parse(scoreResponse).score_total_0a100 || 50 : 50;
+            } catch(e) {
+                console.error("Error al parsear el score de la simulación:", e);
+                state.simulationScores[dim] = 50;
+            }
+
+            showLoading(false);
+            if (state.currentDimension < dimensions.length - 1) {
+                state.currentDimension++;
+                showPage('test');
+                await generateQuestionForDimension(state.currentDimension);
+            } else {
+                calculateFinalScores();
+                showResults();
+            }
+        }
+        
+        // --- LÓGICA DE RESULTADOS ---
+        function calculateFinalScores() {
+            for (let i = 0; i < dimensions.length; i++) {
+                const mcqScore = state.mcqScores[i];
+                state.finalScores[i] = Math.round(mcqScore * 0.4 + state.simulationScores[i] * 0.6);
+            }
+        }
+        function showResults() {
+            showPage('results');
+            const ctx = document.getElementById('radar-chart').getContext('2d');
+            new Chart(ctx, { type: 'radar', data: { labels: dimensions.map(d => d.replace(/ /g, '\n')), datasets: [{ label: 'Puntaje de Liderazgo', data: state.finalScores, backgroundColor: 'rgba(242, 197, 15, 0.2)', borderColor: 'rgba(242, 197, 15, 1)', pointBackgroundColor: 'rgba(242, 197, 15, 1)', pointBorderColor: '#fff', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgba(242, 197, 15, 1)' }] }, options: { scales: { r: { angleLines: { color: 'rgba(0, 0, 0, 0.1)' }, grid: { color: 'rgba(0, 0, 0, 0.1)' }, pointLabels: { color: '#1f2937', font: { size: 12 } }, ticks: { color: '#6b7280', backdropColor: 'rgba(255,255,255,0.75)', stepSize: 20 }, suggestedMin: 0, suggestedMax: 100 } }, plugins: { legend: { labels: { color: '#374151' } } } } });
+            let scoredDimensions = dimensions.map((name, index) => ({ name, score: state.finalScores[index] })).sort((a, b) => b.score - a.score);
+            document.getElementById('strengths-weaknesses').innerHTML = `<p><strong class="text-green-600">Top Fortaleza:</strong> ${scoredDimensions[0].name} (${scoredDimensions[0].score})</p><p><strong class="text-red-500">Área de Desarrollo:</strong> ${scoredDimensions[scoredDimensions.length - 1].name} (${scoredDimensions[scoredDimensions.length - 1].score})</p>`;
+            document.getElementById('action-plan').innerHTML = `<p class="text-gray-600 text-sm"><strong>Plan 30 días:</strong> Enfócate en practicar activamente '${scoredDimensions[scoredDimensions.length - 1].name}'.</p><p class="text-gray-600 text-sm mt-2"><strong>Plan 60 días:</strong> Solicita feedback específico sobre tu área de desarrollo.</p>`;
+        }
+        function generatePDF() {
+            showLoading(true, "Generando tu informe PDF...");
+            setTimeout(() => { showLoading(false); alert("Tu informe PDF ha sido generado y enviado a tu correo (simulación)."); }, 2000);
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('chat-input').addEventListener('keypress', (e) => e.key === 'Enter' && sendMessage());
+        });
+    </script>
+</body>
+</html>
+
