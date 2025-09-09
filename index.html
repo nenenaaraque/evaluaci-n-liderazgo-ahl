@@ -102,7 +102,7 @@
     <script>
         // --- CONFIGURACIÓN Y DATOS ---
         const dimensions = [
-            "Manage Paradoxes", "Challenge Paradigms", "Potentializing People", "Widen Skill Sets", "Build Leadership Capacities"
+            "Manejar Paradojas", "Cuestionar Paradigmas", "Potenciar Personas", "Ampliar Habilidades", "Construir Capacidades de Liderazgo"
         ];
         
         // --- ESTADO DE LA APLICACIÓN ---
@@ -323,7 +323,7 @@
             const ctx = document.getElementById('radar-chart').getContext('2d');
             new Chart(ctx, { type: 'radar', data: { labels: dimensions.map(d => d.replace(/ /g, '\n')), datasets: [{ label: 'Puntaje de Liderazgo', data: state.finalScores, backgroundColor: 'rgba(242, 197, 15, 0.2)', borderColor: 'rgba(242, 197, 15, 1)', pointBackgroundColor: 'rgba(242, 197, 15, 1)', pointBorderColor: '#fff', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgba(242, 197, 15, 1)' }] }, options: { scales: { r: { angleLines: { color: 'rgba(0, 0, 0, 0.1)' }, grid: { color: 'rgba(0, 0, 0, 0.1)' }, pointLabels: { color: '#1f2937', font: { size: 12 } }, ticks: { color: '#6b7280', backdropColor: 'rgba(255,255,255,0.75)', stepSize: 20 }, suggestedMin: 0, suggestedMax: 100 } }, plugins: { legend: { labels: { color: '#374151' } } } } });
             let scoredDimensions = dimensions.map((name, index) => ({ name, score: state.finalScores[index] })).sort((a, b) => b.score - a.score);
-            document.getElementById('strengths-weaknesses').innerHTML = `<p><strong class="text-green-600">Top Fortaleza:</strong> ${scoredDimensions[0].name} (${scoredDimensions[0].score})</p><p><strong class="text-red-500">Área de Desarrollo:</strong> ${scoredDimensions[scoredDimensions.length - 1].name} (${scoredDimensions[scoredDimensions.length - 1].score})</p>`;
+            document.getElementById('strengths-weaknesses').innerHTML = `<p><strong class="text-green-600">Fortaleza Principal:</strong> ${scoredDimensions[0].name} (${scoredDimensions[0].score})</p><p><strong class="text-red-500">Área de Desarrollo:</strong> ${scoredDimensions[scoredDimensions.length - 1].name} (${scoredDimensions[scoredDimensions.length - 1].score})</p>`;
             document.getElementById('action-plan').innerHTML = `<p class="text-gray-600 text-sm"><strong>Plan 30 días:</strong> Enfócate en practicar activamente '${scoredDimensions[scoredDimensions.length - 1].name}'.</p><p class="text-gray-600 text-sm mt-2"><strong>Plan 60 días:</strong> Solicita feedback específico sobre tu área de desarrollo.</p>`;
         }
         function generatePDF() {
